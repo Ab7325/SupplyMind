@@ -1,0 +1,4 @@
+local_settings.py
+*.sqllite3
+__pycache__/
+supplymind_env
