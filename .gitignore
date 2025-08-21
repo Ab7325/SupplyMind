@@ -1,4 +1,4 @@
 local_settings.py
-*.sqllite3
+*.sqlite3
 __pycache__/
 supplymind_env
