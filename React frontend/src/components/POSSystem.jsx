@@ -14,13 +14,15 @@ function POSSystem() {
     const [dashboardStats, setDashboardStats] = useState({});
 
     useEffect(() => {
+        console.log("Component mounted, starting initial data load...");
         loadProducts();
         loadDashboardStats();
     }, []);
-
+ 
     const loadProducts = async () => {
         try {
             setLoading(true);
+            console.log("API Response for Products:"); 
             const data = await api.getProducts();
             setProducts(data.results || data);
         } catch (error) {
