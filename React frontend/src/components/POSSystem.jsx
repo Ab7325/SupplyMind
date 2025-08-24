@@ -121,6 +121,11 @@ function POSSystem() {
         setCart([]);
     };
 
+    const handleDataRefresh = () => {
+        loadProducts();
+        loadDashboardStats();
+    };
+    
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <Header currentView={currentView} setCurrentView={setCurrentView} />
@@ -143,7 +148,11 @@ function POSSystem() {
                 )}
 
                 {currentView === 'dashboard' && (
-                    <Dashboard stats={dashboardStats} />
+                    <Dashboard 
+                        stats={dashboardStats} 
+                        products={products}
+                        onDataRefresh={handleDataRefresh}
+                    />
                 )}
             </main>
         </div>

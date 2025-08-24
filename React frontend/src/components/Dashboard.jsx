@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { api } from '../services/api'; // Your centralized API service
+import toast from 'react-hot-toast'; // For user feedback notifications
+import AddProductModal from './AddProductModal';
+import ManageInventoryModal from './ManageInventoryModal';
 import { Receipt, DollarSign, Package, AlertTriangle, TrendingUp, Plus } from 'lucide-react';
 
-// Stat Card Component
+// Stat Card Component (reusable UI element)
 function StatCard({ title, value, icon, color }) {
     const colorClasses = {
         blue: 'bg-blue-50 border-blue-200',
@@ -9,7 +13,6 @@ function StatCard({ title, value, icon, color }) {
         purple: 'bg-purple-50 border-purple-200',
         orange: 'bg-orange-50 border-orange-200'
     };
-
     return (
         <div className={`${colorClasses[color]} border rounded-xl p-6`}>
             <div className="flex items-center justify-between">
@@ -17,20 +20,18 @@ function StatCard({ title, value, icon, color }) {
                     <p className="text-sm text-gray-600">{title}</p>
                     <p className="text-2xl font-bold text-gray-800">{value}</p>
                 </div>
-                <div className="opacity-80">
-                    {icon}
-                </div>
+                <div className="opacity-80">{icon}</div>
             </div>
         </div>
     );
 }
 
-// Quick Action Card Component
+// Quick Action Card Component (reusable UI element)
 function QuickActionCard({ title, description, icon, onClick }) {
     return (
         <button
             onClick={onClick}
-            className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 text-left transition-colors w-full"
         >
             <div className="flex items-center mb-2">
                 {icon}
@@ -42,7 +43,40 @@ function QuickActionCard({ title, description, icon, onClick }) {
 }
 
 // Main Dashboard Component
-function Dashboard({ stats }) {
+function Dashboard({ stats, products, onDataRefresh }) {
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+
+    // Handler to create a new product
+    const handleAddProduct = async (newProduct) => {
+        try {
+            await api.createProduct(newProduct);
+            toast.success(`${newProduct.name} added successfully!`);
+            setIsAddModalOpen(false);
+            onDataRefresh(); // Refresh data in the parent component
+        } catch (error) {
+            toast.error("Failed to add product.");
+            console.error("Add product error:", error.response?.data || error);
+        }
+    };
+
+    // Handler to update stock for multiple products
+    const handleUpdateInventory = async (updatedProducts, newStockLevels) => {
+        const updatePromises = updatedProducts.map(product =>
+            api.updateProduct(product.id, { stock_quantity: newStockLevels[product.id] })
+        );
+
+        try {
+            await Promise.all(updatePromises);
+            toast.success("Inventory updated successfully!");
+            setIsManageModalOpen(false);
+            onDataRefresh(); // Refresh data
+        } catch (error) {
+            toast.error("Failed to update inventory.");
+            console.error("Update inventory error:", error.response?.data || error);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
@@ -108,7 +142,7 @@ function Dashboard({ stats }) {
                         title="Add New Product"
                         description="Add products to inventory"
                         icon={<Plus className="w-6 h-6" />}
-                        onClick={() => alert('Feature coming in Phase 2!')}
+                        onClick={() => setIsAddModalOpen(true)}
                     />
                     <QuickActionCard
                         title="View Sales Report"
@@ -120,10 +154,25 @@ function Dashboard({ stats }) {
                         title="Manage Inventory"
                         description="Update stock levels"
                         icon={<Package className="w-6 h-6" />}
-                        onClick={() => alert('Feature coming in Phase 2!')}
+                        onClick={() => setIsManageModalOpen(true)}
                     />
                 </div>
             </div>
+
+            {/* Render Modals Conditionally */}
+            {isAddModalOpen && (
+                <AddProductModal
+                    onClose={() => setIsAddModalOpen(false)}
+                    onProductAdded={handleAddProduct}
+                />
+            )}
+            {isManageModalOpen && (
+                <ManageInventoryModal
+                    products={products}
+                    onClose={() => setIsManageModalOpen(false)}
+                    onUpdateInventory={handleUpdateInventory}
+                />
+            )}
         </div>
     );
 }

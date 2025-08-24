@@ -2,3 +2,4 @@ local_settings.py
 *.sqlite3
 __pycache__/
 supplymind_env
+node_modules
