@@ -112,6 +112,7 @@ USE_TZ = True
 # --- Static and Media Files (S3 for Production, Local for Development) ---
 
 # Read AWS settings from .env file. They will be None if not set.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=None)
